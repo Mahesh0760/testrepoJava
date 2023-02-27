@@ -41,11 +41,11 @@ import org.eclipse.jetty.client.api.Request;
 
 public class WebServletTest {
 
-	int numClients = 100;
-	int numThreads = 100;
-	int numRequests = 2000;
+	int numClients = 10;
+	int numRequests = 200;
 	int idleTimeout = 120;
 	String url = "http://localhost:8080/artists";
+	//String url = "http://155.248.224.107:8080/artists";
 	
 	@SuppressWarnings("deprecation")
 	@Test
@@ -55,6 +55,8 @@ public class WebServletTest {
 		CountDownLatch endLatch = new CountDownLatch(numClients);
 		HttpClient client = new HttpClient();
 		client.start();
+		
+		
 		for (int i = 0; i < numClients; i++) {
             new Thread(() -> {
                 try {
@@ -64,25 +66,28 @@ public class WebServletTest {
                     for (int j = 0; j < numRequests; j++) {
                         if (j % 6 == 0) {
                         	//Make a POST request to the server
+                        	long startTime = System.currentTimeMillis();  
                         	Request requestpost = client.POST(url);
-                			requestpost.param("id", "pbx11");
-                			requestpost.param("name", "LastRide");
-                			requestpost.param("title", "Sidhu Moosewala");
+                			requestpost.param("id", "111");
+                			requestpost.param("name", "Sidhu Moosewala");
+                			requestpost.param("title", "LastRide1");
                 			ContentResponse responsepost = requestpost.send();
                 			String res = new String(responsepost.getContent());
-                			System.out.println(res);
+                			long endTime = System.currentTimeMillis();
+                			System.out.println(res +" "+(endTime-startTime));
                         	
                         } else {
                         	//Make a GET request to the server
+                        	long startTime = System.currentTimeMillis();
                         	Request request = client.newRequest(url);
-                			request.param("id", "99");
+                			request.param("name", "Adele");
                             ContentResponse response = request.send();
                 			assertThat(response.getStatus(), equalTo(200));
                 			String responseContent = IOUtils.toString(response.getContent());
-                			System.out.println(responseContent);
+                			long endTime = System.currentTimeMillis();
+                			System.out.println(responseContent +"  "+(endTime-startTime));
                         }
                     }
-
                     // Count down the end latch to signal that the request has finished
                     endLatch.countDown();
                 } catch (Exception e) {
@@ -90,6 +95,7 @@ public class WebServletTest {
                 }
             }).start();
         }
+		
 		
 		// Release the start latch to start the requests
         startLatch.countDown();
@@ -113,27 +119,26 @@ public class WebServletTest {
 //		HttpClient client = new HttpClient();
 //		client.start();
 //
-//		for (int i = 1; i <= numThreads; i++) {
-//			Request request = client.newRequest(url);
-//			request.param("id", "45");
-//			ContentResponse response = request.send();
-//			assertThat(response.getStatus(), equalTo(200));
+////		for (int i = 1; i <= numThreads; i++) {
+////			Request request = client.newRequest(url);
+////			request.param("id", "45");
+////			ContentResponse response = request.send();
+////			assertThat(response.getStatus(), equalTo(200));
+////
+////			String responseContent = IOUtils.toString(response.getContent());
+////			System.out.println(responseContent);
+////		}
 //
-//			String responseContent = IOUtils.toString(response.getContent());
-//			System.out.println(responseContent);
-//		}
-
-//        Request request = client.newRequest(url);
-//        request.param("id","id200");
-//        ContentResponse response = request.send();
-
+//		Request request = client.newRequest(url);
+//		request.param("id", "id200");
+//		ContentResponse response = request.send();
+//
 //		assertThat(response.getStatus(), equalTo(200));
-//		
+//
 //		String responseContent = IOUtils.toString(response.getContent());
-
-//		 System.out.println(responseContent);
+//		System.out.println(responseContent);
 //		client.stop();
-
+//
 //	}
 
 //	@SuppressWarnings("deprecation")

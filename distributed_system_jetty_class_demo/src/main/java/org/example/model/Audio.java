@@ -14,9 +14,14 @@ public class Audio
 	private int NumOfCopiesSold;
 	
 	
-	public Audio(String Id, String ArtistName, String TrackTitle)
+	public Audio()
 	{
 		//Empty Constructor
+	}
+	
+	public Audio(String Id, String ArtistName, String TrackTitle)
+	{
+		//Constructor with 3 properties
 		this.Id = Id;
 		this.ArtistName = ArtistName;
 		this.TrackTitle = TrackTitle;

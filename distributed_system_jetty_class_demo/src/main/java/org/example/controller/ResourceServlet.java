@@ -30,7 +30,6 @@ public class ResourceServlet extends HttpServlet {
 
 	
 	//ConcurrentHashMap is thread safe; 
-	
 	ConcurrentHashMap<String, Audio> artistDB;
 
 	
@@ -41,11 +40,11 @@ public class ResourceServlet extends HttpServlet {
 	{
 		artistDB = new ConcurrentHashMap<String, Audio>();
 		String Id;
-		for(int i=1; i<=100;i++)
+		for(int i=1; i<=50;i++)
 		{
 			Id = Integer.toString(i);
 			Audio audio = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i+2, i+2000, i*5, i*13);
-			artistDB.put(Id, audio);
+			artistDB.put(audio.getArtistName(), audio);
 		}
 	 }
 	
@@ -54,18 +53,19 @@ public class ResourceServlet extends HttpServlet {
 	@Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-		String id = request.getParameter("id");
-		String propName = request.getParameter("property");
+		String name = request.getParameter("name");
 		
 		
 		
-		
-		String aname = null;
-		String atitle = null;
-		Audio result = new Audio(id, aname, atitle);
-		result.setId(id);
-		result.setArtistName(artistDB.get(id).getArtistName());
-		result.setTrackTitle(artistDB.get(id).getTrackTitle());
+		Audio result = new Audio();
+		result.setArtistName(name);
+		result.setId(artistDB.get(name).getId());
+		result.setTrackTitle(artistDB.get(name).getTrackTitle());
+		result.setAlbumTitle(artistDB.get(name).getAlbumTitle());
+		result.setTrackNumber(artistDB.get(name).getTrackNumber());
+		result.setYear(artistDB.get(name).getYear());
+		result.setNumOfReviews(artistDB.get(name).getNumOfReviews());
+		result.setNumOfCopiesSold(artistDB.get(name).getNumOfCopiesSold());
 		
 	    Gson gson = new Gson();
 	 
@@ -73,8 +73,9 @@ public class ResourceServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         out.println("GET RESPONSE IN JSON - single element: " + gson.toJson(result));
-        
-      //to display all the Elements
+     
+        out.println();
+        //to display all the Elements
 	    JsonElement element = gson.toJsonTree(artistDB);
         out.println("GET RESPONSE IN JSON - all elements " + element.toString());
      
