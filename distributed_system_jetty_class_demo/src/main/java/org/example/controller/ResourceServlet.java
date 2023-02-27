@@ -25,14 +25,9 @@ import com.google.gson.JsonElement;
 
 @WebServlet(name = "artists", value = "artists")
 public class ResourceServlet extends HttpServlet {
-    
-	
-
-	
+   
 	//ConcurrentHashMap is thread safe; 
 	ConcurrentHashMap<String, Audio> artistDB;
-
-	
 	
 	//simply emulation of in memory database;
 	@Override
@@ -48,14 +43,10 @@ public class ResourceServlet extends HttpServlet {
 		}
 	 }
 	
-	
-	
 	@Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
 		String name = request.getParameter("name");
-		
-		
 		
 		Audio result = new Audio();
 		result.setArtistName(name);
@@ -74,10 +65,10 @@ public class ResourceServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         out.println("GET RESPONSE IN JSON - single element: " + gson.toJson(result));
      
-        out.println();
-        //to display all the Elements
-	    JsonElement element = gson.toJsonTree(artistDB);
-        out.println("GET RESPONSE IN JSON - all elements " + element.toString());
+//        out.println();
+//        //to display all the Elements
+//	    JsonElement element = gson.toJsonTree(artistDB);
+//        out.println("GET RESPONSE IN JSON - all elements " + element.toString());
      
         out.flush();   
 	

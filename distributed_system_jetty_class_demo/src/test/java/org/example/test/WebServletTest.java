@@ -42,10 +42,10 @@ import org.eclipse.jetty.client.api.Request;
 public class WebServletTest {
 
 	int numClients = 10;
-	int numRequests = 200;
+	int numRequests = 10;
 	int idleTimeout = 120;
-	String url = "http://localhost:8080/artists";
-	//String url = "http://155.248.224.107:8080/artists";
+	//String url = "http://localhost:8080/artists";
+	String url = "http://155.248.224.107:8080/artists";
 	
 	@SuppressWarnings("deprecation")
 	@Test
@@ -64,7 +64,7 @@ public class WebServletTest {
                     startLatch.await();
                     
                     for (int j = 0; j < numRequests; j++) {
-                        if (j % 6 == 0) {
+                        if (j % 3 == 0) {
                         	//Make a POST request to the server
                         	long startTime = System.currentTimeMillis();  
                         	Request requestpost = client.POST(url);
