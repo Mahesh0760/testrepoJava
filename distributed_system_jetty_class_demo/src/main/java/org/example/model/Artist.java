@@ -1,7 +1,9 @@
 package org.example.model;
+import java.io.*;
 
-public class Artist {
+public class Artist implements Serializable{
 	private String id;
+	private String name;
 	public String getId() {
 		return id;
 	}
@@ -14,7 +16,7 @@ public class Artist {
 	public void setName(String name) {
 		this.name = name;
 	}
-	private String name;
+	
 	
 	
 }
