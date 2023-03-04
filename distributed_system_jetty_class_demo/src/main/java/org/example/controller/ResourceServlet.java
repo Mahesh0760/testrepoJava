@@ -13,10 +13,12 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 //import org.example.model.Artist;
 import org.example.model.Audio;
+import org.example.model.SkierEvent;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -27,97 +29,139 @@ import com.google.gson.JsonElement;
 public class ResourceServlet extends HttpServlet {
    
 	//ConcurrentHashMap is thread safe; 
-	ConcurrentHashMap<String, Audio> artistDB;
+	ConcurrentHashMap<Integer, SkierEvent> skierDB;
+	
+	//ConcurrentHashMap<String, Audio> skierdb;
 	
 	//simply emulation of in memory database;
 	@Override
 	 public void init() throws ServletException 
 	{
-		artistDB = new ConcurrentHashMap<String, Audio>();
-		String Id;
-		for(int i=1; i<=50;i++)
-		{
-			Id = Integer.toString(i);
-			Audio audio = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i+2, i+2000, i*5, i*13);
-			artistDB.put(audio.getArtistName(), audio);
-		}
+		// should be in post req of client in testclass
+		
+		skierDB = new ConcurrentHashMap<Integer, SkierEvent>();
 	 }
 	
 	@Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-		String name = request.getParameter("name");
+		//String name = request.getParameter("name");
+		String id = request.getParameter("id");
 		
-		Audio result = new Audio();
-		result.setArtistName(name);
-		result.setId(artistDB.get(name).getId());
-		result.setTrackTitle(artistDB.get(name).getTrackTitle());
-		result.setAlbumTitle(artistDB.get(name).getAlbumTitle());
-		result.setTrackNumber(artistDB.get(name).getTrackNumber());
-		result.setYear(artistDB.get(name).getYear());
-		result.setNumOfReviews(artistDB.get(name).getNumOfReviews());
-		result.setNumOfCopiesSold(artistDB.get(name).getNumOfCopiesSold());
+		int ids = Integer.parseInt(id);
+		
+		SkierEvent ski1 = skierDB.get(ids);
+		
+
+		
 		
 	    Gson gson = new Gson();
 	 
 		PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        out.println("GET RESPONSE IN JSON - single element: " + gson.toJson(result));
+        out.println("GET RESPONSE IN JSON - single element: " + gson.toJson(ski1));
      
-//        out.println();
-//        //to display all the Elements
-//	    JsonElement element = gson.toJsonTree(artistDB);
-//        out.println("GET RESPONSE IN JSON - all elements " + element.toString());
+        out.println();
+        //to display all the Elements
+	    JsonElement element = gson.toJsonTree(skierDB);
+        out.println("GET RESPONSE IN JSON - all elements " + element.toString());
      
         out.flush();   
 	
 	}
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+    {
        
-    	String id = request.getParameter("id");
-        String name = request.getParameter("name");
-        String title = request.getParameter("title");
-        
-        Audio audioInp = new Audio(id, name, title);
-        
-        audioInp.setId(id);
-        audioInp.setArtistName(name);
-        audioInp.setAlbumTitle(title);
-        
-        artistDB.put(id, audioInp);
-        response.setStatus(200);
-    	
-    	response.getOutputStream().println("POST RESPONSE: Artist " + name + " is added to the database.");
-    }
-	
-	
-    //Methods to generate random values for audio item in audioDB.
-	public String getRandomArtistName()
-	{
-        String[] artistNames = {"Adele", "Bruno Mars", "Coldplay", "Dua Lipa", "Ed Sheeran", "Foo Fighters",
-                "Green Day", "Hozier", "Imagine Dragons", "Justin Bieber", "Katy Perry", "Lady Gaga", "Maroon 5",
-                "Nirvana", "One Direction", "Pink", "Queen", "Rihanna", "Shawn Mendes", "Taylor Swift", "U2",
-                "Van Halen", "Whitney Houston", "X Ambassadors", "Yellowcard", "Zara Larsson"};
-        return artistNames[(int) (Math.random() * artistNames.length)];
-    }
 
-    public String getRandomTrackTitle()
-    {
-        String[] trackTitles = {"Hello", "Uptown Funk", "Viva La Vida", "New Rules", "Shape Of You", "Learn To Fly",
-                "Basket Case", "Take Me To Church", "RadioInactive", "Sorry", "Roar", "Poker Face", "Sugar", "RadioInactive", "UpRoar", "Shape Of Me"};
+    	
+    	PrintWriter out = response.getWriter();
         
-        return trackTitles[(int) (Math.random() * trackTitles.length)];
-    }
-    
-    public String getRandomAlbumName()
-    {
-    	String[] albumTitles = {"Thriller", "Sgt. Pepper's Lonely Hearts Club Band", "The Dark Side of the Moon", 
-    			"Nevermind", "Purple Rain", "Abbey Road", "Kind of Blue", "Back in Black", "Hotel California", 
-    			"The Joshua Tree", "Born in the U.S.A.", "Hysteria", "The Chronic", "Appetite for Destruction", 
-    			"Sign o' the Times", "A Night at the Opera", "The Wall", "Rumours", "Pet Sounds", "The Queen Is Dead"};
-        return albumTitles[(int) (Math.random() * albumTitles.length)];
-    }
+    	Gson gson = new Gson();
+    	StringBuilder sb = new StringBuilder();
+//		String s;
+//		while ((s = request.getReader().readLine()) != null) {
+//			sb.append(s);
+//        }
+		
+		Scanner scanner = new Scanner(request.getReader());
+		while (scanner.hasNextLine()) {
+		    sb.append(scanner.nextLine());
+		}
+		
+//		out.println("String Builder value " + sb);
+//		
+//		out.println("String Builder value " + sb.toString());
+		
+//		String skiString = sb.toString();
+//		out.println("String Builder value " + skiString);
+		
+		SkierEvent ski = gson.fromJson(sb.toString(), SkierEvent.class);
+		
+		// Check with object mapper
+        
+        JsonElement element = gson.toJsonTree(ski);
+        
+        out.println();
+        out.println("Display SKi value from stringbuilder" + ski.getSkierId());
+        
+		int SkierId = ski.skierId;
+		//out.println("Display SKirID value after stringBuilder " + SkierId);
+		int ResortId = ski.resortId;
+		int LiftId = ski.liftId;
+		int SeasonId = 2022;
+		int DayId = 1;
+		int Time = ski.time;
+		
+		SkierEvent skier = new SkierEvent(SkierId,ResortId,LiftId,SeasonId,DayId,Time);
+//		JsonElement element1 = gson.toJsonTree(skier);
+//		
+//		out.println("Display skier value for conditions " + element1.toString());
+		
+		if (SkierId >= 1 & SkierId <= 100000) 
+		{
+		    skier.setSkierId(SkierId);
+		    if (ResortId >= 1 & ResortId <= 10) 
+		    {
+		        skier.setResortId(ResortId);
+		        if (LiftId >= 1 & LiftId <= 40) 
+		        {
+		            skier.setLiftId(LiftId);
+		            if (Time >= 1 & Time <= 360) 
+		            {
+		                skier.setTime(Time);
+		                skier.setSeasonId(2022);
+		                skier.setDayId(1);
+		                skierDB.put(SkierId, skier);
+//		                response.getOutputStream().println("POST RESPONSE: Skier " + SkierId + " is added to the database.");
+		                out.println("POST RESPONSE: Skier " + SkierId + " is added to the database.");
+		                response.setStatus(200);
+		            }
+		            else 
+		            {
+		            	out.println("Invalid value for time, must be between 1 and 360");
+		            }
+		        } 
+		        else 
+		        {
+		        	out.println("Invalid value for liftID, must be between 1 and 10");
+		        }
+		    } 
+		    else 
+		    {
+		    	out.println("Invalid value for resortID, must be between 1 and 10");
+		    }
+		} 
+		else 
+		{
+		    out.println("Invalid value for skierID, must be between 1 and 100000");
+		}	
+		
+		out.flush();
+		
+	}
+
+
 }
