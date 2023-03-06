@@ -13,6 +13,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 //import java.nio.charset.StandardCharsets;
@@ -63,6 +64,10 @@ public class WebServletTest {
 	static volatile int successReq;
 	static volatile int failedReq;
 	static long latency;
+	Long[] latencies = new Long[10000];
+	long mean;
+	long median;
+	
 	
 
 	
@@ -76,28 +81,17 @@ public class WebServletTest {
 		
 		ExecutorService executor = Executors.newFixedThreadPool(numThreads);
 		Gson gson = new Gson();
-		 
-		//List<Future<?>> futures = new ArrayList<>();
-		
-//		HttpClient client = new HttpClient();
-//		client.start();
-		
-
 		
 		for (int i = 1; i <= numThreads; i++) 
 		{
-			//startLatch.await();
+
 			executor.submit(new PostingThread(startLatch, endLatch, numRequests));
 			
 	        System.out.println("Waiting for all threads to start...");
 	        
 	        startLatch.countDown();
-	        
-//			System.out.println("Successful requests: " + successReq);
-//	        System.out.println("Failed requests: " + failedReq);
 		}
 		endLatch.await();
-//		System.out.println("All threads have finished!");
 		executor.shutdown();
 		System.out.println("All threads have finished!");
 		
@@ -126,8 +120,6 @@ public class WebServletTest {
                 startLatch1.await();
                 FileWriter outputfile = new FileWriter("C:\\Users\\MAHESHREDDY\\Desktop\\latency.csv");
                 CSVWriter writer = new CSVWriter(outputfile);
-      		  
-		        //CSVWriter writer = new CSVWriter(outputfile);
 		  			        
 		        String[] header = { "start time", "request type", "latency","response code" };
 		        writer.writeNext(header);
@@ -139,27 +131,18 @@ public class WebServletTest {
                     	Instant beforePost = Instant.now();
                     	System.out.println("time stamp before post " + beforePost);
                         int statusCode = sendPostRequest(ski);
+                        System.out.println("Status Code of the request " + statusCode);
                         Instant afterPost = Instant.now();
                     	System.out.println("time stamp after post " + afterPost);
                     	latency = Duration.between(beforePost, afterPost).toMillis();
                     	System.out.println("latency " + latency);
+                    	latencies[j] = latency;
                     	
                     	String str = String.valueOf(latency);
-//                    	FileWriter outputfile = new FileWriter("C:\\Users\\MAHESHREDDY\\Desktop\\latency.csv");
-//                        CSVWriter writer = new CSVWriter(outputfile);
-//              		  
-//        		        //CSVWriter writer = new CSVWriter(outputfile);
-//        		  			        
-//        		        String[] header = { "start time", "request type", "latency","response code" };
-//        		        writer.writeNext(header);
         		  
         		        String[] data1 = { afterPost.toString(), "POST", str , Integer.toString(statusCode) };
         		        writer.writeNext(data1);
         		  
-        		        // closing writer connection
-        		        //writer.close();
-                        JsonElement element = gson.toJsonTree(ski);
-                        System.out.println("skier event value " + statusCode + element.toString());
                         int retries = 0;
                         while (statusCode >= 500 && retries < numRetries) {
                             System.out.println("Retrying request " + j + " on thread " + Thread.currentThread().getId() +
@@ -181,10 +164,25 @@ public class WebServletTest {
                         endLatch1.countDown();
                            
                     }
-                	
+                	long sum = 0;
+                    for(int k=1; k<=latencies.length; k++)
+                    {
+                   	 sum += latencies[k];
+                    }
+                    mean = sum / latencies.length;
+                    System.out.println("Mean Value: " + mean);
+                    
+                    Arrays.sort(latencies);
+                    if (latencies.length % 2 == 0) {
+                        median = ((long) latencies[latencies.length/2] + (long) latencies[latencies.length/2 - 1])/2;
+                     } else {
+                        median = (long) latencies[latencies.length/2];
+                     }
+                    
+                    System.out.println("Median Value: " + median);
                 }
                 writer.close(); 
-                
+
                 System.out.println("Successful requests: " + successReq);
     	        System.out.println("Failed requests: " + failedReq);
             } catch (Exception e) {
@@ -196,8 +194,8 @@ public class WebServletTest {
 	
 	
 	public static Integer sendPostRequest(String JsonData) throws Exception{
-		//URL url = new URL("http://155.248.224.107:8080/skiers");
-		URL url = new URL("http://localhost:8080/skiers");
+		URL url = new URL("http://155.248.224.107:8080/skiers");
+		//URL url = new URL("http://localhost:8080/skiers");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
@@ -226,228 +224,224 @@ public class WebServletTest {
 		SkierEvent sk = new SkierEvent(skierID,resortID,liftID,seasonID,dayID,time);
 		return gson.toJson(sk, SkierEvent.class);
 	}
+}
 
 
 
-
-
-
-
-//	@SuppressWarnings("deprecation")
-//	@Test
-//	public void testArtistsGet() throws Exception {
-//		String url = "http://localhost:8080/artists";
-//		HttpClient client = new HttpClient();
-//		client.start();
+//@SuppressWarnings("deprecation")
+//@Test
+//public void testArtistsGet() throws Exception {
+//	String url = "http://localhost:8080/artists";
+//	HttpClient client = new HttpClient();
+//	client.start();
 //
-////		for (int i = 1; i <= numThreads; i++) {
-////			Request request = client.newRequest(url);
-////			request.param("id", "45");
-////			ContentResponse response = request.send();
-////			assertThat(response.getStatus(), equalTo(200));
+////	for (int i = 1; i <= numThreads; i++) {
+////		Request request = client.newRequest(url);
+////		request.param("id", "45");
+////		ContentResponse response = request.send();
+////		assertThat(response.getStatus(), equalTo(200));
 ////
-////			String responseContent = IOUtils.toString(response.getContent());
-////			System.out.println(responseContent);
-////		}
+////		String responseContent = IOUtils.toString(response.getContent());
+////		System.out.println(responseContent);
+////	}
 //
-//		Request request = client.newRequest(url);
-//		request.param("id", "id200");
+//	Request request = client.newRequest(url);
+//	request.param("id", "id200");
+//	ContentResponse response = request.send();
+//
+//	assertThat(response.getStatus(), equalTo(200));
+//
+//	String responseContent = IOUtils.toString(response.getContent());
+//	System.out.println(responseContent);
+//	client.stop();
+//
+//}
+
+
+
+
+
+
+//@SuppressWarnings("deprecation")
+//@Test
+//public void testArtistsPost() throws Exception 
+//{
+//	
+//	
+//	ConcurrentHashMap<String, Audio> skidb = new ConcurrentHashMap<String, Audio>();
+//	
+////	for(int i=1; i<50;i++)
+////	{
+////		String Id;
+////		Id = Integer.toString(i);
+////		Audio audio = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i+2, i+2000, i*5, i*13);
+////		skidb.put(Id, audio);
+////	}
+//	
+//	
+//	
+//	Thread thread = new Thread(){
+//	    public void run(){
+//	    	int i=50;
+//			while(i>0)
+//			{
+//				String Id;
+//				Id = Integer.toString(i);
+//				Audio audio = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i+2, i+2000, i*5, i*13);
+//				skidb.put(Id, audio);
+//				i--;
+//			}
+//	    }
+//	  };
+//
+//	 thread.start();
+//	
+//	Gson gson = new Gson();
+//	//System.out.println();
+//    //to display all the Elements
+//    JsonElement element = gson.toJsonTree(skidb);
+//    System.out.println("GET RESPONSE IN JSON - all elements " + element.toString());
+//
+////	String url = "http://localhost:8080/artists";
+//	HttpClient client = new HttpClient();
+//	client.start();
+//
+//	for (int i = 1; i < 50; i++) {
+//		Request request = client.POST(url);
+//		String id = Integer.toString(i);
+//		String name = "Mahesh"+id;
+//		String title = "noname"+id;
+//		request.param("id",id);
+//		        request.param("name", name);
+//		        request.param("title",title);
+//
+//		
+////		request.param("id", "id203");
+////		request.param("name", "artist203");
+////		request.param("title", "Noname203");
 //		ContentResponse response = request.send();
-//
-//		assertThat(response.getStatus(), equalTo(200));
-//
-//		String responseContent = IOUtils.toString(response.getContent());
-//		System.out.println(responseContent);
-//		client.stop();
-//
+//		String res = new String(response.getContent());
+//		System.out.println(res);
 //	}
 
+//	client.stop();
 
-	
-	
-	
-	
-//	@SuppressWarnings("deprecation")
-//	@Test
-//	public void testArtistsPost() throws Exception 
+//	Request request = client.POST(url);
+    
+	//ClientPart1 obj = new ClientPart1();
+	//Gson gson = new Gson();
+	//System.out.println();
+    //to display all the Elements
+    //JsonElement element = gson.toJsonTree(obj.skidb);
+    //System.out.println("GET RESPONSE IN JSON - all elements " + element.toString());
+	//String Id;
+//	for(int j=1; j<50;j++)
 //	{
-//		
-//		
-//		ConcurrentHashMap<String, Audio> skidb = new ConcurrentHashMap<String, Audio>();
-//		
-////		for(int i=1; i<50;i++)
-////		{
-////			String Id;
-////			Id = Integer.toString(i);
-////			Audio audio = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i+2, i+2000, i*5, i*13);
-////			skidb.put(Id, audio);
-////		}
-//		
-//		
-//		
-//		Thread thread = new Thread(){
-//		    public void run(){
-//		    	int i=50;
-//				while(i>0)
-//				{
-//					String Id;
-//					Id = Integer.toString(i);
-//					Audio audio = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i+2, i+2000, i*5, i*13);
-//					skidb.put(Id, audio);
-//					i--;
-//				}
-//		    }
-//		  };
-//
-//		 thread.start();
-//		
-//		Gson gson = new Gson();
-//		//System.out.println();
-//        //to display all the Elements
-//	    JsonElement element = gson.toJsonTree(skidb);
-//        System.out.println("GET RESPONSE IN JSON - all elements " + element.toString());
-//
-////		String url = "http://localhost:8080/artists";
-//		HttpClient client = new HttpClient();
-//		client.start();
-//
-//		for (int i = 1; i < 50; i++) {
-//			Request request = client.POST(url);
-//			String id = Integer.toString(i);
-//			String name = "Mahesh"+id;
-//			String title = "noname"+id;
-//			request.param("id",id);
-//			        request.param("name", name);
-//			        request.param("title",title);
-//
-//			
-////			request.param("id", "id203");
-////			request.param("name", "artist203");
-////			request.param("title", "Noname203");
-//			ContentResponse response = request.send();
-//			String res = new String(response.getContent());
-//			System.out.println(res);
-//		}
-
-//		client.stop();
-
-//		Request request = client.POST(url);
-        
-		//ClientPart1 obj = new ClientPart1();
-		//Gson gson = new Gson();
-		//System.out.println();
-        //to display all the Elements
-	    //JsonElement element = gson.toJsonTree(obj.skidb);
-        //System.out.println("GET RESPONSE IN JSON - all elements " + element.toString());
-		//String Id;
-//		for(int j=1; j<50;j++)
-//		{
-//			String Id1 = Integer.toString(j);
-//			//Audio audioObj = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i+2, i+2000, i*5, i*13);
-//			String key = Id1;
-//	        Audio audioObj = skidb.get(Id1);
-//	       	String id = audioObj.getId();
-//			String name = audioObj.getArtistName();
-//			String title = audioObj.getAlbumTitle();
-//			request.param("id",id);
-//	        request.param("name", name);
-//	        request.param("title",title);
-//	        
-//	        ContentResponse response = request.send();		
-//	        String res = new String(response.getContent());
-//			System.out.println(res);
-//		}
-//        String key = "22";
-//        Audio audioObj = obj.skidb.get(key);
+//		String Id1 = Integer.toString(j);
+//		//Audio audioObj = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i+2, i+2000, i*5, i*13);
+//		String key = Id1;
+//        Audio audioObj = skidb.get(Id1);
 //       	String id = audioObj.getId();
 //		String name = audioObj.getArtistName();
 //		String title = audioObj.getAlbumTitle();
-		
-//		String id = "66";
-//		String name = "mahesh";
-//		String title = "No name";
-//        request.param("id",id);
+//		request.param("id",id);
 //        request.param("name", name);
 //        request.param("title",title);
 //        
 //        ContentResponse response = request.send();		
 //        String res = new String(response.getContent());
 //		System.out.println(res);
-//		client.stop();
 //	}
-
-	// @Test
-//	void testHelloServletGet() throws Exception {
-//
-//		HttpClient client = new HttpClient();
-//		client.start();
-//
-//		ContentResponse res = client.GET("http://155.248.224.107:8080/HelloServlet");
-//
-//		System.out.println(res.getContentAsString());
-//
-//		client.stop();
-//
-//	}
-//
-//	// @Test
-//	void testBlockingServletGet() throws Exception {
-//
-//		HttpClient client = new HttpClient();
-//		client.start();
-//
-//		ContentResponse res = client.GET("http://localhost:9090/coen6317/BlockingServlet");
-//
-//		System.out.println(res.getContentAsString());
-//
-//		client.stop();
-//
-//	}
-
-	// @Test
-//	void testAsyncServletGet() throws Exception {
-//
-//		String url = "http://localhost:9090/coen6317/longtask";
-//		HttpClient client = new HttpClient();
-//		client.start();
-//
-//		ContentResponse response = client.GET(url);
-//
-//		assertThat(response.getStatus(), equalTo(200));
-//
-//		String responseContent = IOUtils.toString(response.getContent());
-//
-//		System.out.println(responseContent);
-//		// assertThat(responseContent, equalTo( "This is some heavy resource that will
-//		// be served in an async way"));
-//
-//	}
-
-//	public String getRandomArtistName()
-//	{
-//        String[] artistNames = {"Adele", "Bruno Mars", "Coldplay", "Dua Lipa", "Ed Sheeran", "Foo Fighters",
-//                "Green Day", "Hozier", "Imagine Dragons", "Justin Bieber", "Katy Perry", "Lady Gaga", "Maroon 5",
-//                "Nirvana", "One Direction", "Pink", "Queen", "Rihanna", "Shawn Mendes", "Taylor Swift", "U2",
-//                "Van Halen", "Whitney Houston", "X Ambassadors", "Yellowcard", "Zara Larsson"};
-//        return artistNames[(int) (Math.random() * artistNames.length)];
-//    }
-//
-//    public String getRandomTrackTitle()
-//    {
-//        String[] trackTitles = {"Hello", "Uptown Funk", "Viva La Vida", "New Rules", "Shape Of You", "Learn To Fly",
-//                "Basket Case", "Take Me To Church", "RadioInactive", "Sorry", "Roar", "Poker Face", "Sugar", "RadioInactive", "UpRoar", "Shape Of Me"};
-//        
-//        return trackTitles[(int) (Math.random() * trackTitles.length)];
-//    }
+//    String key = "22";
+//    Audio audioObj = obj.skidb.get(key);
+//   	String id = audioObj.getId();
+//	String name = audioObj.getArtistName();
+//	String title = audioObj.getAlbumTitle();
+	
+//	String id = "66";
+//	String name = "mahesh";
+//	String title = "No name";
+//    request.param("id",id);
+//    request.param("name", name);
+//    request.param("title",title);
 //    
-//    public String getRandomAlbumName()
-//    {
-//    	String[] albumTitles = {"Thriller", "Sgt. Pepper's Lonely Hearts Club Band", "The Dark Side of the Moon", 
-//    			"Nevermind", "Purple Rain", "Abbey Road", "Kind of Blue", "Back in Black", "Hotel California", 
-//    			"The Joshua Tree", "Born in the U.S.A.", "Hysteria", "The Chronic", "Appetite for Destruction", 
-//    			"Sign o' the Times", "A Night at the Opera", "The Wall", "Rumours", "Pet Sounds", "The Queen Is Dead"};
-//        return albumTitles[(int) (Math.random() * albumTitles.length)];
-//    }
-//	
-//	//get random skier id
-}
+//    ContentResponse response = request.send();		
+//    String res = new String(response.getContent());
+//	System.out.println(res);
+//	client.stop();
+//}
+
+// @Test
+//void testHelloServletGet() throws Exception {
+//
+//	HttpClient client = new HttpClient();
+//	client.start();
+//
+//	ContentResponse res = client.GET("http://155.248.224.107:8080/HelloServlet");
+//
+//	System.out.println(res.getContentAsString());
+//
+//	client.stop();
+//
+//}
+//
+//// @Test
+//void testBlockingServletGet() throws Exception {
+//
+//	HttpClient client = new HttpClient();
+//	client.start();
+//
+//	ContentResponse res = client.GET("http://localhost:9090/coen6317/BlockingServlet");
+//
+//	System.out.println(res.getContentAsString());
+//
+//	client.stop();
+//
+//}
+
+// @Test
+//void testAsyncServletGet() throws Exception {
+//
+//	String url = "http://localhost:9090/coen6317/longtask";
+//	HttpClient client = new HttpClient();
+//	client.start();
+//
+//	ContentResponse response = client.GET(url);
+//
+//	assertThat(response.getStatus(), equalTo(200));
+//
+//	String responseContent = IOUtils.toString(response.getContent());
+//
+//	System.out.println(responseContent);
+//	// assertThat(responseContent, equalTo( "This is some heavy resource that will
+//	// be served in an async way"));
+//
+//}
+
+//public String getRandomArtistName()
+//{
+//    String[] artistNames = {"Adele", "Bruno Mars", "Coldplay", "Dua Lipa", "Ed Sheeran", "Foo Fighters",
+//            "Green Day", "Hozier", "Imagine Dragons", "Justin Bieber", "Katy Perry", "Lady Gaga", "Maroon 5",
+//            "Nirvana", "One Direction", "Pink", "Queen", "Rihanna", "Shawn Mendes", "Taylor Swift", "U2",
+//            "Van Halen", "Whitney Houston", "X Ambassadors", "Yellowcard", "Zara Larsson"};
+//    return artistNames[(int) (Math.random() * artistNames.length)];
+//}
+//
+//public String getRandomTrackTitle()
+//{
+//    String[] trackTitles = {"Hello", "Uptown Funk", "Viva La Vida", "New Rules", "Shape Of You", "Learn To Fly",
+//            "Basket Case", "Take Me To Church", "RadioInactive", "Sorry", "Roar", "Poker Face", "Sugar", "RadioInactive", "UpRoar", "Shape Of Me"};
+//    
+//    return trackTitles[(int) (Math.random() * trackTitles.length)];
+//}
+//
+//public String getRandomAlbumName()
+//{
+//	String[] albumTitles = {"Thriller", "Sgt. Pepper's Lonely Hearts Club Band", "The Dark Side of the Moon", 
+//			"Nevermind", "Purple Rain", "Abbey Road", "Kind of Blue", "Back in Black", "Hotel California", 
+//			"The Joshua Tree", "Born in the U.S.A.", "Hysteria", "The Chronic", "Appetite for Destruction", 
+//			"Sign o' the Times", "A Night at the Opera", "The Wall", "Rumours", "Pet Sounds", "The Queen Is Dead"};
+//    return albumTitles[(int) (Math.random() * albumTitles.length)];
+//}
+//
+////get random skier id
