@@ -1,3 +1,7 @@
+//import java.util.concurrent.TimeUnit;
+//
+//import com.google.gson.JsonElement;
+
 /*
  * package org.example.test;
  * 
@@ -108,6 +112,178 @@
 //  int SeasonId = Integer.parseInt(seasonId);
 //  int DayId = Integer.parseInt(dayId);
 //  int Time = Integer.parseInt(time);
+
+//                        	Request requestpost = client.POST(url);
+//	 						String skierid = Integer.toString(skier.getSkierId());
+//	 						String resId = Integer.toString(skier.getResortId());
+//	 						String liftid = Integer.toString(skier.getLiftId());
+//	 						String season = Integer.toString(skier.getSeasonId());
+//	 						String day = Integer.toString(skier.getDayId());
+//	 						String time = Integer.toString(skier.getTime());
+//                			requestpost.param("skierId", skierid);
+//                			requestpost.param("resortId", resId);
+//                			requestpost.param("liftId", liftid);
+//                			requestpost.param("seasonId", season);
+//                			requestpost.param("dayId", day);
+//                			requestpost.param("time", time);
+//                       	requestpost.path(skier);
+//                			ContentResponse responsepost = requestpost.send();
+
+
+	// assert response if 200 elseif(500/400) for(,5)
+//                			String res = new String(responsepost.getContent());
+
+
+//		ConcurrentHashMap<String, Audio> skidb = new ConcurrentHashMap<String, Audio>();
+//		
+//		for (int i = 1; i < numClients; i++) {
+//			String Id;
+//			Id = Integer.toString(i);
+//			Audio audio = new Audio(Id, getRandomArtistName(), getRandomTrackTitle(), getRandomAlbumName(), i + 2,
+//					i + 2000, i * 5, i * 13);
+//			skidb.put(Id, audio);
+//		}
+
+//for (i = 1; i < numThreads; i++) {
+//            new Thread(() -> {
+//                try {
+//                    // Wait for the start latch to be released
+//                    startLatch.await();
+//                    
+//                    for (j = 1; j < numRequests; j++) 
+//                    {
+//                    	//Make a POST request to the server
+//                    	long startTime = System.currentTimeMillis();
+//                    	String skier = getRandomSkier();
+//                    	JsonElement element = gson.toJsonTree(skier);
+//                        System.out.println("skier event value " + element.toString());
+//                    	int an = sendPostRequest(skier);
+//                    	
+//                    	if(an == 200)
+//                    	{
+//                    		SuccessReq++;
+//                    	}
+//            			long endTime = System.currentTimeMillis();
+//            			System.out.println(an +" "+(endTime-startTime)); 
+//            			
+//            			if(i*j == 10000) 
+//            			{
+//            				
+//            			}
+//                    }
+//                    
+//                    // Count down the end latch to signal that the request has finished
+//                    endLatch.countDown();
+//                } catch (Exception e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }).start();
+//        }
+//		
+//		
+//		// Release the start latch to start the requests
+//        startLatch.countDown();
+//
+//        // Wait for all requests to finish
+//        endLatch.await(10, TimeUnit.SECONDS);
+//	}
+
+
+
+
+
+//    private static final String POST_URL = "http://localhost:8080/SkiResorts_war_exploded/skiers";
+//    private static final int NUM_THREADS = 32;
+//    private static final int NUM_POSTS_PER_THREAD = 1000;
+//    private static final int TOTAL_POSTS = NUM_THREADS * NUM_POSTS_PER_THREAD;
+//    private static final int NUM_RETRIES = 5;
+//
+//    private static volatile int successfulRequests = 0;
+//    private static volatile int failedRequests = 0;
+
+//    public static void main(String[] args) throws InterruptedException, ExecutionException {
+//
+//        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
+//        CountDownLatch startSignal = new CountDownLatch(1);
+//        CountDownLatch endSignal = new CountDownLatch(NUM_THREADS);
+//
+//        List<Future<?>> futures = new ArrayList<>();
+//
+//        for (int i = 0; i < NUM_THREADS; i++) {
+//            futures.add(executor.submit(new PostingThread(startSignal, endSignal, NUM_POSTS_PER_THREAD)));
+//        }
+//
+//        System.out.println("Waiting for all threads to start...");
+//        startSignal.countDown();
+//        endSignal.await();
+//        System.out.println("All threads have finished!");
+//
+//        executor.shutdown();
+//
+//        System.out.println("Successful requests: " + successfulRequests);
+//        System.out.println("Failed requests: " + failedRequests);
+//    }
+//
+//    static class PostingThread implements Runnable {
+//
+//        private final CountDownLatch startSignal;
+//        private final CountDownLatch endSignal;
+//        private final int numPosts;
+//
+//        public PostingThread(CountDownLatch startSignal, CountDownLatch endSignal, int numPosts) {
+//            this.startSignal = startSignal;
+//            this.endSignal = endSignal;
+//            this.numPosts = numPosts;
+//        }
+//
+//        @Override
+//        public void run() {
+//            try {
+//                startSignal.await();
+//                for (int i = 0; i < numPosts; i++) {
+//                    int statusCode = sendPostRequest();
+//                    int retries = 0;
+//                    while (statusCode >= 500 && retries < NUM_RETRIES) {
+//                        System.out.println("Retrying request " + i + " on thread " + Thread.currentThread().getId() +
+//                                " due to status code " + statusCode);
+//                        statusCode = sendPostRequest();
+//                        retries++;
+//                    }
+//                    if (statusCode == 201) {
+//                        successfulRequests++;
+//                    } else {
+//                        failedRequests++;
+//                    }
+//                }
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            } finally {
+//                endSignal.countDown();
+//            }
+//        }
+//
+//        private int sendPostRequest() {
+//            int statusCode = -1;
+//            try {
+//                URL url = new URL(POST_URL);
+//                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//                conn.setDoOutput(true);
+//                conn.setRequestMethod("POST");
+//                conn.setRequestProperty("Content-Type", "application/json");
+//
+//                String jsonInputString = LiftRide.generateRandomLiftRideJson(10000,40,360,10);
+//                byte[] input = jsonInputString.getBytes("utf-8");
+//                conn.getOutputStream().write(input);
+//
+//                statusCode = conn.getResponseCode();
+//                conn.disconnect();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            return statusCode;
+//        }
+//    }
+//}
 
 		
 		

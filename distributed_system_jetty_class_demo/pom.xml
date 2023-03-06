@@ -48,6 +48,16 @@
     		<artifactId>json</artifactId>
    		 	<version>20210307</version>
 		</dependency>
+		
+		
+		<!-- https://mvnrepository.com/artifact/com.opencsv/opencsv -->
+		<dependency>
+		    <groupId>com.opencsv</groupId>
+		    <artifactId>opencsv</artifactId>
+		    <version>5.7.1</version>
+		</dependency>
+
+
 
 
         <!-- jetty dependencies for deployment -->

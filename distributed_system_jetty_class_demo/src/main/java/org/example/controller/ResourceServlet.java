@@ -25,7 +25,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
 
-@WebServlet(name = "artists", value = "artists")
+@WebServlet(name = "skiers", value = "skiers")
 public class ResourceServlet extends HttpServlet {
    
 	//ConcurrentHashMap is thread safe; 
@@ -80,27 +80,13 @@ public class ResourceServlet extends HttpServlet {
     	PrintWriter out = response.getWriter();
         
     	Gson gson = new Gson();
-    	StringBuilder sb = new StringBuilder();
-//		String s;
-//		while ((s = request.getReader().readLine()) != null) {
-//			sb.append(s);
-//        }
-		
+    	StringBuilder sb = new StringBuilder();		
 		Scanner scanner = new Scanner(request.getReader());
 		while (scanner.hasNextLine()) {
 		    sb.append(scanner.nextLine());
 		}
 		
-//		out.println("String Builder value " + sb);
-//		
-//		out.println("String Builder value " + sb.toString());
-		
-//		String skiString = sb.toString();
-//		out.println("String Builder value " + skiString);
-		
 		SkierEvent ski = gson.fromJson(sb.toString(), SkierEvent.class);
-		
-		// Check with object mapper
         
         JsonElement element = gson.toJsonTree(ski);
         
@@ -108,7 +94,6 @@ public class ResourceServlet extends HttpServlet {
         out.println("Display SKi value from stringbuilder" + ski.getSkierId());
         
 		int SkierId = ski.skierId;
-		//out.println("Display SKirID value after stringBuilder " + SkierId);
 		int ResortId = ski.resortId;
 		int LiftId = ski.liftId;
 		int SeasonId = 2022;
@@ -116,9 +101,6 @@ public class ResourceServlet extends HttpServlet {
 		int Time = ski.time;
 		
 		SkierEvent skier = new SkierEvent(SkierId,ResortId,LiftId,SeasonId,DayId,Time);
-//		JsonElement element1 = gson.toJsonTree(skier);
-//		
-//		out.println("Display skier value for conditions " + element1.toString());
 		
 		if (SkierId >= 1 & SkierId <= 100000) 
 		{
@@ -135,7 +117,6 @@ public class ResourceServlet extends HttpServlet {
 		                skier.setSeasonId(2022);
 		                skier.setDayId(1);
 		                skierDB.put(SkierId, skier);
-//		                response.getOutputStream().println("POST RESPONSE: Skier " + SkierId + " is added to the database.");
 		                out.println("POST RESPONSE: Skier " + SkierId + " is added to the database.");
 		                response.setStatus(200);
 		            }
